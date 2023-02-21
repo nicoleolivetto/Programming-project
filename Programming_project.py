@@ -21,7 +21,20 @@ warnings.filterwarnings(action='ignore', message='All-NaN slice encountered')
 def get_downloadable_data(df):
     return df.to_csv().encode('utf-8')
 
-st.header('Top 1000 Most Subscribed Youtube Channels')
+st.title('**Top 1000 Most Subscribed Youtube Channels**')
+
+description=''' This data contains 7 attributes about the top YouTube channels as per number of subscribers.
+ These attributes with their proper description are as follows: \n
+
+**Rank**: Rank of the channel as per number of subscribers they have\n
+**Youtuber**: Channel Official Name\n
+**Subscribers**: Number of subscribers channel have\n
+**Video views**: Number for which all videos have been watched collectively\n
+**Video count**: Number of videos channel has uploaded so far\n
+**Category**: Category (genre) of the channel\n
+**Started**: Year when the channel was started'''
+
+st.write(description)
 
 topsubscribed_df =pd.read_csv('/Users/nicoleolivetto/Downloads/topSubscribed.csv')
 
@@ -58,7 +71,7 @@ topsubscribed_df = topsubscribed_df.replace('https://us.youtubers.me/global/all/
 
 topsubscribed_df.reset_index(drop=True, inplace=True)
 
-st.subheader('Dataset after chanching column types, removing rows with zeros,changing the name of a column, removing raw with wrong value')
+st.subheader('Dataset after changing column types, removing rows with zeros, changing the name of a column, removing raw with wrong value')
 
 st.write(topsubscribed_df)
 
@@ -78,13 +91,13 @@ if show_info:
     st.subheader('Topsubscribed_df.describe()')
     st.write(topsubscribed_df.describe())
 
-st.subheader('I created a new column name "range_subs" and divided all entries in 6 categories')
+st.subheader('I created a new column named "range_subs" and divided all entries in 6 categories')
 
 topsubscribed_df=topsubscribed_df.assign(range_subs=0)
 topsubscribed_df.range_subs = topsubscribed_df.range_subs.astype(str)
 
 #add code
-code = '''for i in range ((len(topsubscribed_df["Subscribers"]))):
+code1 = '''for i in range ((len(topsubscribed_df["Subscribers"]))):
     if (topsubscribed_df.at[(i),'Subscribers'] > 10000000) and (topsubscribed_df.at[(i),'Subscribers'] <= 15000000):
         topsubscribed_df.at[(i),'range_subs']= '10M - 15M'
     elif (topsubscribed_df.at[(i),'Subscribers'] > 15000000) and (topsubscribed_df.at[(i),'Subscribers'] <= 20000000):
@@ -99,10 +112,9 @@ code = '''for i in range ((len(topsubscribed_df["Subscribers"]))):
         topsubscribed_df.at[(i),'range_subs']= '200M+'
 '''
 
-show_code=st.sidebar.checkbox('Show code()')
-if show_code:
-    st.subheader('Topsubscribed_df.describe()')
-    st.code(code, language='python')
+show_code1=st.sidebar.checkbox('Show code1')
+if show_code1:
+    st.code(code1, language='python')
 
 
 for i in range ((len(topsubscribed_df["Subscribers"]))):
@@ -122,7 +134,7 @@ for i in range ((len(topsubscribed_df["Subscribers"]))):
 st.write(topsubscribed_df)
 
 st.subheader('The following graphs show how many channels there are in each subscriber range')
-
+st.write('Most channels have 10-50M subscribers')
 
 fig1=plt.figure(figsize=(15,10))
 plt.title('Subscriber range')
@@ -133,14 +145,15 @@ m.set(xlabel ='range_subs', ylabel = 'Values')
 plt.show()
    
 st.pyplot(fig1)
-    
+
+fig15=plt.figure(figsize=(15,10))    
 st.set_option('deprecation.showPyplotGlobalUse', False)
 pie_chart = topsubscribed_df['range_subs'].value_counts()
 pie_chart.plot.pie(shadow=True,startangle=90,autopct='%1.1f%%')
-plt.legend(topsubscribed_df['range_subs'])
+plt.legend(topsubscribed_df['range_subs'].value_counts().index.unique())
 plt.show()
 
-st.pyplot()
+st.pyplot(fig15)
     
 
 st.subheader('How many of these youtubers joined YT each year?')
@@ -182,132 +195,178 @@ with col_2:
     st.pyplot(fig3)
 
 
-
 col_1, col_2 = st.columns(2)
 
 with col_1:
     st.subheader('Total view per category')
     st.write(topsubscribed_df.groupby("Category")["VideoViews"].sum().sort_values(ascending=False))
 with col_2:
-    st.subheader('Mean views per category')
+    st.subheader('Average views per category')
     st.write(topsubscribed_df.groupby("Category")["VideoViews"].mean().sort_values(ascending=False))
 
 
-st.subheader('Mean video count per sub range')
+st.subheader('Average video count per sub range')
 
-#stampo la media di videocount per pgni sub range
+
 st.write( topsubscribed_df.groupby(topsubscribed_df['range_subs'])['Video Count'].transform('mean').unique())
 fig4, ax = plt.subplots()
-#rappresesnto  come cambia la media di video count a seconda del sub range
+
 ax.plot(topsubscribed_df['range_subs'].unique(), topsubscribed_df.groupby(topsubscribed_df['range_subs'])['Video Count'].transform('mean').unique())
 ax.set_xlabel("range")
 ax.set_ylabel("media video count")
-#plt.show()
+
 st.pyplot(fig4)
 
-st.subheader('Mean video views per sub range')
+st.subheader('Average video views per sub range')
 
-#stampo la media di video views per pgni sub range
+
 st.write( topsubscribed_df.groupby(topsubscribed_df['range_subs'])['VideoViews'].transform('mean').unique())
 fig5, ax = plt.subplots()
-#rappresesnto  come cambia la media di video views a seconda del sub range
+
 ax.plot(topsubscribed_df['range_subs'].unique(), topsubscribed_df.groupby(topsubscribed_df['range_subs'])['VideoViews'].transform('mean').unique())
 ax.set_xlabel("range")
 ax.set_ylabel("media video views")
 st.pyplot(fig5)
 
 st.subheader('How do attributes influence each other?')
+
+description2=''' A pair plot is a data visualization that plots pair-wise relationships between all the variables of a dataset. 
+The diagonal line shows the distribution of values in that variable using a histogram. Each other cell shows the relationship as a scatterplot between the two variables at their intersection.'''
+
+st.write(description2)
+
 fig6=sns.set(style="ticks", color_codes=True)    
 sns.pairplot(topsubscribed_df)
 st.pyplot(fig6)
 
+st.subheader('Subscribers depending on start year')
+fig17=plt.figure(figsize=(15,10))
+plt.scatter(topsubscribed_df['Started'], topsubscribed_df['Subscribers'], s=100, color='green', alpha=0.3)
+plt.xlabel('Started')
+plt.ylabel('Subscribers')
+plt.grid()
+st.pyplot(fig17)
+
+st.subheader('Video views depending on subscribers')
+fig18=plt.figure(figsize=(15,10))
+plt.scatter(topsubscribed_df['Subscribers'], topsubscribed_df['VideoViews'],s=100, color='lime', alpha=0.1)
+plt.xlabel('Subscribers')
+plt.ylabel('VideoViews')
+plt.grid()
+st.pyplot(fig18)
+
+st.subheader('Video count depending on start year')
+fig19=plt.figure(figsize=(15,10))
+plt.scatter(topsubscribed_df['Started'], topsubscribed_df['Video Count'],s=100, color='purple', alpha=0.1)
+plt.xlabel('Started')
+plt.ylabel('Video count')
+plt.grid()
+st.pyplot(fig19)
+
 st.subheader('Correlation matrix')
+
+description3='''A correlation matrix is a table showing correlation coefficients among your variables. 
+Each cell in the table shows the correlation between two variables.
+The correlation coefficient is a standardized metric that ranges from -1 and +1. Positive values indicate a positive correlation,
+negative values indicate a negative correlation. 0 indicates no correlation.'''
+
+st.write(description3)
 
 fig7=plt.figure(figsize=(8,6))
 sns.heatmap(topsubscribed_df.corr(), annot=True)
 st.pyplot(fig7)
 
-st.subheader('How does the video count change depending on the sub range?')
+st.subheader('How video views change depending on the category')
+
 fig8=plt.figure(figsize=(25,15))
-sns.lineplot(x = 'range_subs', y = 'Video Count', data=topsubscribed_df)
-plt.title('Video count nei vari range di subs')
+sns.lineplot(x = 'Category', y = 'VideoViews', data=topsubscribed_df,linewidth=2, marker='*',markersize=25, color='blue')
+plt.title('How video views change depending on the category', fontsize = 25)
 plt.grid()
 st.pyplot(fig8)
-
-st.subheader('How do video views change depending on the sub range?')
-#come il video views cambia a seconda del range subs
-fig9=plt.figure(figsize=(25,15))
-sns.lineplot(x = 'range_subs', y = 'VideoViews', data=topsubscribed_df)
-plt.title('come il video views cambia a seconda del range subs')
-plt.grid()
-st.pyplot(fig9)
 
 fig10=plt.figure(figsize=(30,10))
 plt.subplot(121)
 
-#come il range subs influisce su video views e su video count
-st.subheader('How does the sub range affect the videos views and video count?')
+st.subheader('How does the sub range affect video views and video count?')
 plt.title('Video views depending on range subs',fontsize = 20)
 plt.ylabel("videoviews")
 topsubscribed_df.groupby('range_subs')['VideoViews'].mean().sort_index().plot.bar(color = 'pink')
 plt.grid()
 plt.subplot(122)
-plt.title('Video count depending on range subs',fontsize = 20)
+plt.title('Video count depending on subscriber range',fontsize = 20)
 plt.ylabel("video count")
 topsubscribed_df.groupby('range_subs')['Video Count'].mean().sort_index().plot.bar(color = 'yellow')
 plt.grid()
 st.pyplot(fig10)
 
-r1=(topsubscribed_df[topsubscribed_df['range_subs']=='10M - 15M'])
-r2=(topsubscribed_df[topsubscribed_df['range_subs']=='15M - 20M'])
-r3=(topsubscribed_df[topsubscribed_df['range_subs']=='20M - 50M'])
-r4=(topsubscribed_df[topsubscribed_df['range_subs']=='50M - 100M'])
-r5=(topsubscribed_df[topsubscribed_df['range_subs']=='100M - 200M'])
-r6=(topsubscribed_df[topsubscribed_df['range_subs']=='200M+'])
+st.subheader('Distribution of video views and start year for each sub range')
 
-st.subheader('Correlation matrix for each sub range')
+description4='''A boxplot is a simple way of representing statistical data on a plot in which a rectangle is drawn to represent the second and third quartiles, usually with a vertical line inside to indicate the median value. 
+The lower and upper quartiles are shown as horizontal lines either side of the rectangle.  
+Outliers that differ significantly from the rest of the dataset may be plotted as individual points beyond the whiskers on the box-plot.'''
 
-fig11, axes = plt.subplots(2,3, figsize=(25, 15))
+st.write(description4)
 
-sns.heatmap(r1.corr(), annot=True,ax=axes[0,0])
-sns.heatmap(r2.corr(), annot=True,ax=axes[0,1])
-sns.heatmap( r3.corr(), annot=True,ax=axes[0,2])
-sns.heatmap(r4.corr(), annot=True,ax=axes[1,0])
-sns.heatmap( r5.corr(), annot=True,ax=axes[1,1])
-sns.heatmap(r6.corr(), annot=True,ax=axes[1,2])
-st.pyplot(fig11)
-
-
-st.subheader('Distribution of video views and started for each sub range')
 fig12, axes = plt.subplots(1,2, figsize=(18, 15))
-
-fig12.suptitle('Distribution')
 
 sns.boxplot(ax=axes[ 0], data=topsubscribed_df, x='range_subs', y='VideoViews', palette='pastel')
 sns.boxplot(ax=axes[ 1], data=topsubscribed_df, x='range_subs', y='Started', palette='pastel')
 st.pyplot(fig12)
 
-st.subheader('Df ater adding a new column containing the number of yoears each channel has been on YT')
+#create two new columns
 topsubscribed_df = topsubscribed_df.assign(Years_on_YT = 2023 - topsubscribed_df['Started'])
+topsubscribed_df = topsubscribed_df.assign(ThirtyM="0")
 
-df2 = topsubscribed_df.drop('Category', axis=1)
-df2 = df2.drop('Youtube Channel', axis=1)
-df2 = df2.drop('range_subs', axis=1)
-df2.reset_index(drop=True, inplace=True)
+#get rid of outliers and create df_filtered
+q = topsubscribed_df["Video Count"].quantile(0.75)
+q_low = topsubscribed_df["Video Count"].quantile(0.25)
+q_hi  = topsubscribed_df["Video Count"].quantile(0.75)
 
-q = df2["Video Count"].quantile(0.75)
-q_low = df2["Video Count"].quantile(0.25)
-q_hi  = df2["Video Count"].quantile(0.75)
-
-df_filtered = df2[(df2["Video Count"] < q_hi) & (df2["Video Count"] > q_low)]
+df_filtered = topsubscribed_df[(topsubscribed_df["Video Count"] < q_hi) & (topsubscribed_df["Video Count"] > q_low)]
 df_filtered.reset_index(drop=True, inplace=True)
 
-fig12.suptitle('Dataset after removing outliers')
+st.subheader('Df after adding two new columns and removing the outliers')
+
+code2='''q = topsubscribed_df["Video Count"].quantile(0.75)
+q_low = topsubscribed_df["Video Count"].quantile(0.25)
+q_hi  = topsubscribed_df["Video Count"].quantile(0.75)
+
+df_filtered = topsubscribed_df[(topsubscribed_df["Video Count"] < q_hi) & (topsubscribed_df["Video Count"] > q_low)]
+df_filtered.reset_index(drop=True, inplace=True)'''
+
+show_code2=st.sidebar.checkbox('Show code2')
+if show_code2:
+    st.subheader('Outlier removal')
+    st.code(code2, language='python')
+
 
 st.write(df_filtered)
+
 show_infos=st.checkbox('Show info() of df after removing outliers')
 if show_infos:
-    st.subheader('Topsubscribed_df.info()')
+    st.subheader('df_filtered.info()')
+
+
+    buff = io.StringIO()
+    df_filtered.info(buf=buff)
+    n = buff.getvalue()
+    st.text(n)
+
+st.subheader('Boxplot before vs after removing outliers')
+fig16, axes = plt.subplots(1,2, figsize=(20, 15))
+sns.boxplot(ax=axes[ 0], data=topsubscribed_df, x='range_subs', y='Video Count', palette='Paired')
+sns.boxplot(ax=axes[ 1], data=df_filtered, x='range_subs', y='Video Count', palette='Paired')
+st.pyplot(fig16)
+
+#drop three columns and create df2
+df_filtered = df_filtered.drop(['Category','Youtube Channel', 'range_subs'], axis=1)
+
+st.subheader('Df after dropping Category, Youtube Channel and range_subs')
+st.write(df_filtered)
+
+show_infos=st.checkbox('Show info() of df after dropping columns')
+if show_infos:
+    st.subheader('df_filtered.info()')
 
 
     buff = io.StringIO()
@@ -320,20 +379,6 @@ fig13=plt.figure(figsize=(8,6))
 sns.heatmap(df_filtered.corr(), annot=True)
 st.pyplot(fig13)
 
-topsubscribed_df = topsubscribed_df.assign(Years_on_YT = 2023 - topsubscribed_df['Started'])
-topsubscribed_df = topsubscribed_df.assign(ThirtyM="0")
-
-df2 = topsubscribed_df.drop('Category', axis=1)
-df2 = df2.drop('Youtube Channel', axis=1)
-df2 = df2.drop('range_subs', axis=1)
-df2.reset_index(drop=True, inplace=True)
-
-q = df2["Video Count"].quantile(0.75)
-q_low = df2["Video Count"].quantile(0.25)
-q_hi  = df2["Video Count"].quantile(0.75)
-
-df_filtered = df2[(df2["Video Count"] < q_hi) & (df2["Video Count"] > q_low)]
-df_filtered.reset_index(drop=True, inplace=True)
 
 for i in range (len(df_filtered['ThirtyM'])):
     if((df_filtered.at[(i), 'Subscribers']) > 30000000):
@@ -341,10 +386,31 @@ for i in range (len(df_filtered['ThirtyM'])):
     else:
         df_filtered.at[(i), 'ThirtyM'] = 0
 
-si = df_filtered[df_filtered.ThirtyM == 1] #hanno piu di 30M subs
-no = df_filtered[df_filtered.ThirtyM == 0] #hanno meno do 30M subs  
+si = df_filtered[df_filtered.ThirtyM == 1] # >30M subs
+no = df_filtered[df_filtered.ThirtyM == 0] # <30M subs  
 
+st.subheader('Replace values of ThirtyM with 1 if the number of subscribers is >=30M or with 0 if it is <30M')
+
+for i in range (len(df_filtered['ThirtyM'])):
+    if((df_filtered.at[(i), 'Subscribers']) >= 30000000):
+        df_filtered.at[(i), 'ThirtyM'] = 1
+    else:
+        df_filtered.at[(i), 'ThirtyM'] = 0
+
+code3='''for i in range (len(df_filtered['ThirtyM'])):
+    if((df_filtered.at[(i), 'Subscribers']) >= 30000000):
+        df_filtered.at[(i), 'ThirtyM'] = 1
+    else:
+        df_filtered.at[(i), 'ThirtyM'] = 0'''
+
+show_code3=st.sidebar.checkbox('Show code3')
+if show_code3:
+    st.code(code3, language='python')
+
+st.write(df_filtered)
 #MODEL
+
+st.header('**Implementation of Gaussian Naive Bayes**')
 
 model = GaussianNB()
 y=df_filtered.ThirtyM
